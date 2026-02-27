@@ -1552,22 +1552,13 @@ function init(){
   renderBadges();
   updateTopStats();
   document.getElementById('nickname-input').value = state.nickname;
-  // ニックネームが未設定（初回）の場合のみ入力を受け付ける
-  const nickInput = document.getElementById('nickname-input');
-  if (state.nickname && state.nickname !== 'プレイヤー' && state.history.length > 0) {
-    // 一度プレイ済みの場合はロック（プレミアムで複数人対応予定）
-    nickInput.readOnly = true;
-    nickInput.style.background = '#f5f5f5';
-    nickInput.style.color = '#888';
-    nickInput.title = 'ニックネームの変更はプレミアムプランで対応予定です';
-  } else {
-    nickInput.addEventListener('input', e=>{
-      state.nickname = e.target.value||'プレイヤー';
-      saveData();
-      renderBadges();
-      updateTopStats();
-    });
-  }
+  document.getElementById('nickname-input').addEventListener('input', e=>{
+    state.nickname = e.target.value||'プレイヤー';
+    saveData();
+    renderBadges();
+    updateTopStats();
+  });
+  updateNicknameLock();
   syncMenuLevelUI();
   syncStartBtnLabel();
 }
@@ -1604,6 +1595,22 @@ function saveData(){
       isPremium:state.isPremium, missionProgress:state.missionProgress, level:state.level,
     }));
   }catch(e){}
+}
+
+function updateNicknameLock(){
+  const nickInput = document.getElementById("nickname-input");
+  if(!nickInput) return;
+  if(state.history.length > 0){
+    nickInput.readOnly = true;
+    nickInput.style.background = "#f5f5f5";
+    nickInput.style.color = "#888";
+    nickInput.title = "ニックネームの変更はプレミアムプランで対応予定です";
+  } else {
+    nickInput.readOnly = false;
+    nickInput.style.background = "";
+    nickInput.style.color = "";
+    nickInput.title = "";
+  }
 }
 
 function getBadges(nickname){
@@ -2190,6 +2197,7 @@ function judgeAll(){
   });
   if(state.history.length>200) state.history=state.history.slice(0,200);
   saveData();
+  updateNicknameLock();
   // Play result sound
   if(accuracy===100) { SFX.perfect(); launchConfetti(3000); }
   else if(accuracy>=80) SFX.correct();
@@ -3759,6 +3767,13 @@ function startAdvMode() {
   document.getElementById('numpad-wrap').style.display = 'none';
   document.getElementById('btn-judge-wrap').style.display = 'none';
   document.getElementById('adv-one-wrap').style.display = 'flex';
+
+  // レベルバッジをアドバンスド用に更新
+  const lvBadgeWrap = document.getElementById('lv-badge-wrap');
+  if (lvBadgeWrap) {
+    const advLvNames = {2: 'Lv2 ヒントあり ⚡', 3: 'Lv3 ヒントなし 🔥'};
+    lvBadgeWrap.innerHTML = '<div class="lv3-badge" style="background:linear-gradient(135deg,#00d4ff,#7c3aed)">' + (advLvNames[state.level] || 'Lv' + state.level) + '</div>';
+  }
 
   advRender();
 }
