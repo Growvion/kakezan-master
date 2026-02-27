@@ -1558,7 +1558,6 @@ function init(){
     renderBadges();
     updateTopStats();
   });
-  updateNicknameLock();
   syncMenuLevelUI();
   syncStartBtnLabel();
 }
@@ -2197,7 +2196,6 @@ function judgeAll(){
   });
   if(state.history.length>200) state.history=state.history.slice(0,200);
   saveData();
-  updateNicknameLock();
   // Play result sound
   if(accuracy===100) { SFX.perfect(); launchConfetti(3000); }
   else if(accuracy>=80) SFX.correct();
